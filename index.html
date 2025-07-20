@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <title>Buku Mengaji Interaktif</title>
+
+  <!-- Library -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/blasten/turn.js/turn.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+
+  <style>
+    html, body {
+      margin: 0; padding: 0;
+      width: 100%; height: 100%;
+      background: #fdf6ec;
+      font-family: 'Comic Sans MS', cursive;
+      overflow: hidden;
+    }
+
+    .grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 20px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* Page 7 - Latihan Rumi ke Jawi */
+#page7 {
+  font-family: 'Comic Sans MS', sans-serif;
+  background: #fffbe7;
+  text-align: center;
+  padding: 20px;
+}
+
+#page7 h2 {
+  color: #ff7f50;
+  margin-bottom: 20px;
+}
+
+#page7 .question {
+  background: #fff8dc;
+  margin: 20px auto;
+  padding: 15px;
+  border-radius: 20px;
+  max-width: 500px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+#page7 .choices {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 15px;
+}
+
+#page7 .choice {
+  background: #fff;
+  padding: 15px 25px;
+  border: 3px solid #ddd;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 30px;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+}
+
+#page7 .choice:hover {
+  background: #f1f1f1;
+}
+
+/* Betul */
+#page7 .choice.correct {
+  background: #c2f7c2 !important;
+  border-color: #2ecc71 !important;
+  animation: pop 0.4s ease;
+}
+
+/* Salah */
+#page7 .choice.wrong {
+  background: #ffd6d6 !important;
+  border-color: #e74c3c !important;
+  animation: shake 0.4s ease;
+}
+
+/* Animasi gegar */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  50% { transform: translateX(10px); }
+  75% { transform: translateX(-10px); }
+}
+
+/* Animasi pop */
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.sambung-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+  margin-top: 30px;
+  text-align: center;
+}
+
+.jawi-anim {
+  font-size: 3rem;
+  color: #2c3e50;
+  direction: rtl;
+  min-height: 80px;
+}
+
+.jawi-anim span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.rumi {
+  font-size: 1.6rem;
+  color: #16a085;
+  margin-top: 10px;
+}
+
+.btn-anim {
+  margin-top: 15px;
+  padding: 8px 18px;
+  background: #f39c12;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.btn-anim:hover {
+  background: #e67e22;
+}
+
+.huruf-click {
+  font-size: 2rem;
+  color: #333;
+  cursor: pointer;
+  display: inline-block;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.page .binatang-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 30px !important;
+  justify-items: center !important;
+  align-items: center !important;
+  margin-top: 20px;
+  padding: 10px;
+}
+
+.page .item {
+  text-align: center;
+  font-size: 1.5rem; /* Besarkan tulisan */
+}
+
+.page .img-box img {
+  max-width: 150px;  /* Besarkan gambar */
+  height: auto;
+}
+
+.page .huruf-click {
+  font-size: 2.5rem;  /* Besarkan huruf Jawi */
+  color: #333;
+  cursor: pointer;
+  display: inline-block;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.page .huruf-click:active {
+  color: #e67e22;
+}
+
+.huruf-click:active {
+  transform: scale(1.2);
+  color: #e67e22;
+}
+
+@keyframes bounceAnim {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.3); }
+  60%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+.bounce {
+  animation: bounceAnim 0.3s ease;
+}
+
+.huruf {
+  font-size: 40px;
+  cursor: default;
+}
+
+/* Gaya Butang Audio */
+.audio-btn {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.audio-btn button {
+  background: linear-gradient(45deg, #ff9ff3, #feca57, #48dbfb);
+  color: #fff;
+  padding: 15px 30px;
+  font-size: 20px;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+.audio-btn button:hover {
+  transform: scale(1.1);
+  background: linear-gradient(45deg, #ff6b81, #ffb142, #1dd1a1);
+}
+
+    #flipbook { width: 100%; height: 100%; }
+
+    #flipbook .page {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      box-sizing: border-box;
+      padding: 20px; text-align: center;
+      background: #fffbea;
+      user-select: none;
+      border: 1px solid #e4d6a7;
+
+      /* Efek helaian */
+      box-shadow: inset -15px 0 25px rgba(0,0,0,0.05),
+                  inset 15px 0 25px rgba(0,0,0,0.05),
+                  0 5px 15px rgba(0,0,0,0.15);
+      transition: transform 0.5s ease, box-shadow 0.5s ease;
+    }
+
+    .page.turning {
+      transform: rotateY(-8deg);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    /* Tajuk dan teks responsif */
+    h1 {
+      color: #f46b45;
+      margin: 10px;
+      font-size: clamp(2rem, 5vw, 4rem);
+      line-height: 1.4;
+    }
+    h2 {
+      color: #f46b45;
+      margin: 10px;
+      font-size: clamp(1.5rem, 4vw, 3rem);
+    }
+    p, .nota {
+      font-size: clamp(1rem, 2.5vw, 1.5rem);
+      color: #555;
+    }
+
+    /* Grid huruf */
+    .grid {
+      display: grid; gap: 15px;
+      grid-template-columns: repeat(7, 1fr);
+      max-width: 90%; margin-top: 20px;
+    }
+    .huruf {
+      background: #fff; color: #219ebc;
+      border: 2px solid #f4a261; border-radius: 15px;
+      box-shadow: 2px 4px 6px rgba(0,0,0,0.2);
+      display: flex; align-items: center; justify-content: center;
+      height: 100px; 
+      font-size: clamp(1.8rem, 6vw, 3rem);
+      cursor: pointer;
+      transition: transform 0.3s, background 0.3s;
+      padding: 5px; text-align: center;
+    }
+    .huruf:hover { background: #ffe0ac; transform: scale(1.1); }
+
+    /* Responsif grid */
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+      .huruf { height: 80px; }
+    }
+    @media (max-width: 480px) {
+      .grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .huruf { height: 70px; }
+    }
+
+    /* Surah Al-Fatihah */
+    .surah-container {
+      flex: 1; width: 100%; max-width: 650px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 1rem;
+      padding: 0.5rem; overflow-y: auto;
+    }
+    .ayat-fatihah {
+      background: #fffdf5; border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      width: 90%; max-width: 600px; min-height: 80px;
+      padding: 1rem; text-align: center;
+      cursor: pointer;
+    }
+    .ayat-fatihah.ayat-panjang {
+      width: 95%; min-height: 150px; padding: 2rem 1rem;
+    }
+    .ayat-fatihah .arab {
+      font-size: clamp(18px, 3vw, 40px);
+      line-height: 1.5; color: #333;
+    }
+    .ayat-fatihah .latin {
+      font-size: clamp(12px, 1.2vw, 18px);
+      color: #666; margin-top: 5px;
+    }
+
+    /* Grid binatang */
+    .binatang-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+      justify-items: center;
+      padding: 20px;
+      width: 100%;
+      max-width: 1200px;
+      margin: auto;
+    }
+    .item { text-align: center; }
+    .img-box img {
+      max-width: 150px;
+      width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .page-title {
+    font-size: clamp(2.5rem, 6vw, 5rem);  /* Automatik besar ikut screen */
+  font-weight: bold;
+  color: #fff;  /* Putih supaya nampak jelas atas background */
+  text-shadow: 2px 4px 6px rgba(0,0,0,0.5);  /* Bagi ada shadow supaya tak tenggelam */
+  margin: 0;
+  text-align: center;
+}
+
+/* Overlay penuh skrin */
+.login-box {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(255, 251, 234, 0.95); /* warna latar semi-transparent */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Tengah secara menegak */
+  align-items: center;     /* Tengah secara mendatar */
+  z-index: 1000;
+  padding: 20px;
+}
+
+/* Tajuk */
+.login-box h2 {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  margin-bottom: 30px;
+  color: #d35400;
+}
+
+/* Input Password */
+.login-box input {
+  width: 300px; max-width: 90%;
+  padding: 12px;
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  border: 2px solid #f4a261;
+  border-radius: 12px;
+  text-align: center;
+  outline: none;
+}
+
+/* Butang */
+.login-box button {
+  background: linear-gradient(45deg, #ff9ff3, #feca57, #48dbfb);
+  border: none;
+  padding: 14px 40px;
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: bold;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+.login-box button:hover {
+  transform: scale(1.08);
+  background: linear-gradient(45deg, #ff6b81, #ffb142, #1dd1a1);
+}
+
+  .page-subtitle {
+    font-size: clamp(1.2rem, 3vw, 2rem);
+  color: #f8f8f8;
+  text-shadow: 1px 3px 5px rgba(0,0,0,0.4);
+  margin-top: 10px;
+  text-align: center;
+}
+
+    .jawi {
+      font-size: clamp(1.5rem, 5vw, 2.5rem);
+      font-weight: bold;
+      background: #fff7e6;
+      border: 3px solid #f4a261;
+      border-radius: 15px;
+      padding: 8px 12px;
+      margin-top: 8px;
+      box-shadow: 3px 5px 10px rgba(0,0,0,0.2);
+      cursor: pointer;
+      display: inline-block;
+    }
+    .rumi {
+      font-size: clamp(1rem, 3vw, 1.5rem);
+      margin-top: 5px;
+      color: #333;
+    }
+    @media (max-width: 600px) {
+      .img-box img { max-width: 120px; }
+      .binatang-grid { gap: 15px; }
+    }
+  </style>
+</head>
+<body>
+
+ <!-- Kotak Login -->
+<div class="login-box" id="loginBox">
+  <h2>Sila Masukkan Password</h2>
+  <input type="password" id="password" placeholder="Masukkan Password">
+  <button onclick="checkPassword()">Buka</button>
+  <p id="error" style="color:red;"></p>
+</div>
+
+<!-- Semua kandungan e-book (flipbook) -->
+<div id="ebook-content" style="display:none;">
+  <!-- Semua kod flipbook awak di sini -->
+</div>
+
+<div id="flipbook">
+  <!-- Page 1 -->
+  <div class="page" 
+     style="background: url('img/background1.jpg') no-repeat center center; 
+            background-size: cover; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center;      /* Tengah secara menegak */
+            align-items: center;          /* Tengah secara mendatar */
+            height: 100%; 
+            text-align: center;">
+  <h1 class="page-title">Mari Belajar Mengaji</h1>
+  <p class="page-subtitle">Selak ke kanan untuk mula</p>
+</div>
+  <!-- Page 2: Isi Kandungan -->
+  <div class="page">
+    <h2>Isi Kandungan</h2>
+    <ul style="
+      list-style:none; padding:0; margin:0; 
+      text-align:center; line-height:2; color:#333;
+      font-size: clamp(1.2rem, 2.5vw, 2rem);
+    ">
+      <li>1. Huruf Hijaiyah (Asas)</li>
+      <li>2. Mari Mengeja (Haiwan)</li>
+      <li>3. Mari Mengenal Baris</li>
+      <li>4. Iqra’ 1 – Baris Fathah</li>
+      <li>5. Iqra’ 2 – Baris Kasrah</li>
+      <li>6. Iqra’ 3 – Baris Dhammah</li>
+      <li>7. Surah Al-Fatihah</li>
+    </ul>
+    <p class="nota">(Selak ke kanan untuk mula belajar)</p>
+  </div>
+
+  <!-- Page 3: Huruf Hijaiyah -->
+<div class="page">
+  <h2>Huruf Hijaiyah</h2>
+  <div class="grid">
+    <div class="huruf">ا</div>
+    <div class="huruf">ب</div>
+    <div class="huruf">ت</div>
+    <div class="huruf">ث</div>
+    <div class="huruf">ج</div>
+    <div class="huruf">ح</div>
+    <div class="huruf">خ</div>
+    <div class="huruf">د</div>
+    <div class="huruf">ذ</div>
+    <div class="huruf">ر</div>
+    <div class="huruf">ز</div>
+    <div class="huruf">س</div>
+    <div class="huruf">ش</div>
+    <div class="huruf">ص</div>
+    <div class="huruf">ض</div>
+    <div class="huruf">ط</div>
+    <div class="huruf">ظ</div>
+    <div class="huruf">ع</div>
+    <div class="huruf">غ</div>
+    <div class="huruf">ف</div>
+    <div class="huruf">ق</div>
+    <div class="huruf">ك</div>
+    <div class="huruf">ل</div>
+    <div class="huruf">م</div>
+    <div class="huruf">ن</div>
+    <div class="huruf">و</div>
+    <div class="huruf">ه</div>
+    <div class="huruf">لا</div>
+    <div class="huruf">ء</div>
+    <div class="huruf">ي</div>
+  </div>
+
+  <div class="audio-btn">
+    <button id="playHijaiyah">▶ DENGAR HURUF</button>
+  </div>
+
+  <audio id="hijaiyahAudio">
+    <source src="audio/huruf.mp3" type="audio/mpeg">
+    <source src="audio/huruf.ogg" type="audio/ogg">
+  </audio>
+</div>
+
+  <!-- Halaman 4: Tajuk sahaja -->
+<div class="page">
+  <h1 style="
+    font-size: clamp(2rem, 5vw, 4rem);
+    color: #d35400;
+    text-align: center;
+    line-height: 1.5;
+  ">
+    مـــاري بـــلاجر<br>مـــنجـــاجي<br>دالم بهاس جاوي
+  </h1>
+  <p style="font-size: 1.2rem; color: #555; margin-top: 20px; text-align: center;">
+    (Mari Belajar Mengeja Dalam Bahasa Jawi)
+  </p>
+</div>
+
+<!-- Halaman 5: Cara Sambung Huruf -->
+<div class="page">
+  <h2 style="color:#e67e22; text-align:center;">Mari Sambung Huruf Jawi</h2>
+  <p style="text-align:center; color:#555;">Tekan butang untuk tengok huruf sambung jadi perkataan.</p>
+
+  <div class="sambung-grid">
+    <!-- Contoh 1 -->
+    <div class="contoh">
+      <div class="jawi-anim" id="ayat1">
+        <span>س</span><span>ــا</span><span>يــ</span><span>ا</span>
+        <span> </span>
+        <span>ســ</span><span>وــ</span><span>كــ</span><span>ا</span>
+        <span> </span>
+        <span>مــ</span><span>ا</span><span>كــ</span><span>ن</span>
+      </div>
+      <div class="rumi">Saya suka makan</div>
+      <button class="btn-anim" onclick="animHuruf('ayat1')">▶ Lihat Animasi</button>
+    </div>
+
+    <!-- Contoh 2 -->
+    <div class="contoh">
+      <div class="jawi-anim" id="ayat2">
+        <span>نــ</span><span>ا</span><span>مــ</span><span>ا</span>
+        <span> </span>
+        <span>ســ</span><span>ا</span><span>يــ</span><span>ا</span>
+        <span> </span>
+        <span>ا</span><span>لــ</span><span>ي</span>
+      </div>
+      <div class="rumi">Nama saya Ali</div>
+      <button class="btn-anim" onclick="animHuruf('ayat2')">▶ Lihat Animasi</button>
+    </div>
+  </div>
+</div>
+
+<!-- Halaman 6: Mari Mengeja Binatang -->
+<div class="page">
+  <h2>Mari Mengeja</h2>
+  <p>Pilih Haiwan & Belajar Mengeja</p>
+
+  <div class="binatang-grid">
+    <!-- Lembu -->
+    <div class="item">
+      <div class="img-box">
+        <img src="img/lembu.png" alt="Lembu">
+      </div>
+      <div class="jawi huruf-click">لمبو</div>
+      <div class="rumi">ل م ب و</div>
+    </div>
+
+    <!-- Kambing -->
+    <div class="item">
+      <div class="img-box">
+        <img src="img/kambing.png" alt="Kambing">
+      </div>
+      <div class="jawi huruf-click">كمبيڠ</div>
+      <div class="rumi">ڬ ل ب ي ڠ</div>
+    </div>
+
+    <!-- Ayam -->
+    <div class="item">
+      <div class="img-box">
+        <img src="img/ayam.png" alt="Ayam">
+      </div>
+      <div class="jawi huruf-click">ايم</div>
+      <div class="rumi">ا ي م</div>
+    </div>
+
+    <!-- Unta -->
+    <div class="item">
+      <div class="img-box">
+        <img src="img/unta.png" alt="Unta">
+      </div>
+      <div class="jawi huruf-click">ونتا</div>
+      <div class="rumi">و ن ت ا</div>
+    </div>
+
+    <!-- Burung -->
+    <div class="item">
+      <div class="img-box">
+        <img src="img/burung.png" alt="Burung">
+      </div>
+      <div class="jawi huruf-click">بوروڠ</div>
+      <div class="rumi">ب و ر و ڠ</div>
+    </div>
+
+    <!-- Itik -->
+    <div class="item">
+      <div class="img-box">
+        <img src="img/itik.png" alt="Itik">
+      </div>
+      <div class="jawi huruf-click">ايتق</div>
+      <div class="rumi">ا ي ت ق</div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 7 -->
+<div class="page" id="page7">
+  <h2>Latihan Padanan Rumi ke Jawi</h2>
+
+  <!-- Soalan 1 -->
+  <div class="question">
+    <p><b>1. Saya</b> – Pilih tulisan jawi yang betul:</p>
+    <div class="choices">
+      <div class="choice" data-correct="false">سايور</div>
+      <div class="choice" data-correct="true">ساي</div>
+      <div class="choice" data-correct="false">ساكو</div>
+    </div>
+  </div>
+
+  <!-- Soalan 2 -->
+  <div class="question">
+    <p><b>2. Rumah</b> – Pilih tulisan jawi yang betul:</p>
+    <div class="choices">
+      <div class="choice" data-correct="false">موتور</div>
+      <div class="choice" data-correct="false">ايم</div>
+      <div class="choice" data-correct="true">رومه</div>
+    </div>
+  </div>
+
+  <!-- Soalan 3 -->
+  <div class="question">
+    <p><b>3. Kereta</b> – Pilih tulisan jawi yang betul:</p>
+    <div class="choices">
+      <div class="choice" data-correct="false">كافل</div>
+      <div class="choice" data-correct="false">اونتا</div>
+      <div class="choice" data-correct="true">كريتا</div>
+    </div>
+  </div>
+
+  <!-- Audio -->
+  <audio id="wrongSound" src="https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg"></audio>
+  <audio id="correctSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+</div>
+
+<!-- Halaman 8: Tajuk dengan baris -->
+<div class="page">
+  <h1 style="
+    font-size: clamp(2rem, 5vw, 4rem);
+    color: #d35400;
+    text-align: center;
+    line-height: 1.8;
+  ">
+    مَــارِي مَــنِــڬَــنَلْ<br>بَارِسْ
+  </h1>
+  <p style="font-size: 1.2rem; color: #555; margin-top: 20px; text-align: center;">
+    (Mari Mengenal Baris)
+  </p>
+</div>
+
+  <!-- Page 9: Iqra’ 1 (Fathah) -->
+  <div class="page">
+  <h2>Fathah</h2>
+  <div class="grid">
+    <div class="huruf">اَ</div>
+    <div class="huruf">بَ</div>
+    <div class="huruf">تَ</div>
+    <div class="huruf">ثَ</div>
+    <div class="huruf">جَ</div>
+    <div class="huruf">حَ</div>
+    <div class="huruf">خَ</div>
+    <div class="huruf">دَ</div>
+    <div class="huruf">ذَ</div>
+    <div class="huruf">رَ</div>
+    <div class="huruf">زَ</div>
+    <div class="huruf">سَ</div>
+    <div class="huruf">شَ</div>
+    <div class="huruf">صَ</div>
+    <div class="huruf">ضَ</div>
+    <div class="huruf">طَ</div>
+    <div class="huruf">ظَ</div>
+    <div class="huruf">عَ</div>
+    <div class="huruf">غَ</div>
+    <div class="huruf">فَ</div>
+    <div class="huruf">قَ</div>
+    <div class="huruf">كَ</div>
+    <div class="huruf">لَ</div>
+    <div class="huruf">مَ</div>
+    <div class="huruf">نَ</div>
+    <div class="huruf">وَ</div>
+    <div class="huruf">هَ</div>
+    <div class="huruf">يَ</div>
+  </div>
+
+  <div class="audio-btn">
+    <button id="playFathah">▶ DENGAR SEMUA</button>
+  </div>
+
+  <audio id="fathahAudio">
+    <source src="audio/fathah.mp3" type="audio/mpeg">
+    <source src="audio/fathah.ogg" type="audio/ogg">
+  </audio>
+</div>
+
+  <!-- Page 11: Iqra’ 2 (Kasrah) -->
+<div class="page">
+  <h2>Kasrah</h2>
+  <div class="grid">
+    <div class="huruf">اِ</div>
+    <div class="huruf">بِ</div>
+    <div class="huruf">تِ</div>
+    <div class="huruf">ثِ</div>
+    <div class="huruf">جِ</div>
+    <div class="huruf">حِ</div>
+    <div class="huruf">خِ</div>
+    <div class="huruf">دِ</div>
+    <div class="huruf">ذِ</div>
+    <div class="huruf">رِ</div>
+    <div class="huruf">زِ</div>
+    <div class="huruf">سِ</div>
+    <div class="huruf">شِ</div>
+    <div class="huruf">صِ</div>
+    <div class="huruf">ضِ</div>
+    <div class="huruf">طِ</div>
+    <div class="huruf">ظِ</div>
+    <div class="huruf">عِ</div>
+    <div class="huruf">غِ</div>
+    <div class="huruf">فِ</div>
+    <div class="huruf">قِ</div>
+    <div class="huruf">كِ</div>
+    <div class="huruf">لِ</div>
+    <div class="huruf">مِ</div>
+    <div class="huruf">نِ</div>
+    <div class="huruf">وِ</div>
+    <div class="huruf">هِ</div>
+    <div class="huruf">يِ</div>
+  </div>
+
+  <div class="audio-btn">
+    <button id="playKasrah">▶ DENGAR SEMUA</button>
+  </div>
+
+  <audio id="kasrahAudio">
+    <source src="audio/kasrah.mp3" type="audio/mpeg">
+    <source src="audio/kasrah.ogg" type="audio/ogg">
+  </audio>
+</div>
+
+  
+
+  <!-- Page 13: Iqra’ 3 (Dhammah) -->
+<div class="page">
+  <h2>Dhammah</h2>
+  <div class="grid">
+    <div class="huruf">اُ</div>
+    <div class="huruf">بُ</div>
+    <div class="huruf">تُ</div>
+    <div class="huruf">ثُ</div>
+    <div class="huruf">جُ</div>
+    <div class="huruf">حُ</div>
+    <div class="huruf">خُ</div>
+    <div class="huruf">دُ</div>
+    <div class="huruf">ذُ</div>
+    <div class="huruf">رُ</div>
+    <div class="huruf">زُ</div>
+    <div class="huruf">سُ</div>
+    <div class="huruf">شُ</div>
+    <div class="huruf">صُ</div>
+    <div class="huruf">ضُ</div>
+    <div class="huruf">طُ</div>
+    <div class="huruf">ظُ</div>
+    <div class="huruf">عُ</div>
+    <div class="huruf">غُ</div>
+    <div class="huruf">فُ</div>
+    <div class="huruf">قُ</div>
+    <div class="huruf">كُ</div>
+    <div class="huruf">لُ</div>
+    <div class="huruf">مُ</div>
+    <div class="huruf">نُ</div>
+    <div class="huruf">وُ</div>
+    <div class="huruf">هُ</div>
+    <div class="huruf">يُ</div>
+  </div>
+
+  <div class="audio-btn">
+    <button id="playDhammah">▶ DENGAR SEMUA</button>
+  </div>
+
+  <audio id="dhammahAudio">
+    <source src="audio/dhammah.mp3" type="audio/mpeg">
+    <source src="audio/dhammah.ogg" type="audio/ogg">
+  </audio>
+</div>
+
+  
+
+ <!-- Page 16: Surah Al-Fatihah -->
+<div class="page">
+  <h2>Belajar Surah Al-Fatihah</h2>
+  <p>Klik ayat untuk dengar</p>
+  <div class="surah-container">
+    <div class="huruf ayat-fatihah" data-audio="fatihah1"><div class="arab">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div><div class="latin">Bismillahirrahmanirrahim</div></div>
+    <div class="huruf ayat-fatihah" data-audio="fatihah2"><div class="arab">الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ</div><div class="latin">Alhamdulillahi Rabbil ‘Alamin</div></div>
+    <div class="huruf ayat-fatihah" data-audio="fatihah3"><div class="arab">الرَّحْمَٰنِ الرَّحِيمِ</div><div class="latin">Ar-Rahmanir-Rahim</div></div>
+    <div class="huruf ayat-fatihah" data-audio="fatihah4"><div class="arab">مَالِكِ يَوْمِ الدِّينِ</div><div class="latin">Maliki Yawmid-Din</div></div>
+    <div class="huruf ayat-fatihah" data-audio="fatihah5"><div class="arab">إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ</div><div class="latin">Iyyaka Na‘budu Wa Iyyaka Nasta‘in</div></div>
+    <div class="huruf ayat-fatihah" data-audio="fatihah6"><div class="arab">اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ</div><div class="latin">Ihdinas-Siratal-Mustaqim</div></div>
+    <div class="huruf ayat-fatihah ayat-panjang" data-audio="fatihah7"><div class="arab">صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ</div><div class="latin">Siratal-ladhina An‘amta ‘Alaihim Ghairil-Maghdubi ‘Alaihim Walad-Dallin</div></div>
+  </div>
+
+  <!-- Letak semua audio file -->
+  <audio id="fatihah1" src="audio/fatihah1.mp3"></audio>
+  <audio id="fatihah2" src="audio/fatihah2.mp3"></audio>
+  <audio id="fatihah3" src="audio/fatihah3.mp3"></audio>
+  <audio id="fatihah4" src="audio/fatihah4.mp3"></audio>
+  <audio id="fatihah5" src="audio/fatihah5.mp3"></audio>
+  <audio id="fatihah6" src="audio/fatihah6.mp3"></audio>
+  <audio id="fatihah7" src="audio/fatihah7.mp3"></audio>
+</div>
+<style>
+  .binatang-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+    justify-items: center;
+    padding: 20px;
+    width: 100%;
+    max-width: 1200px;
+    margin: auto;
+  }
+
+  .item {
+    text-align: center;
+  }
+
+  .img-box img {
+    max-width: 150px;
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  .jawi {
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-weight: bold;
+    background: #fff7e6;
+    border: 3px solid #f4a261;
+    border-radius: 15px;
+    padding: 8px 12px;
+    margin-top: 8px;
+    box-shadow: 3px 5px 10px rgba(0,0,0,0.2);
+    cursor: pointer;
+    display: inline-block;
+  }
+
+  .rumi {
+    font-size: clamp(1rem, 2vw, 1.5rem);
+    margin-top: 5px;
+    color: #333;
+  }
+
+  @media (max-width: 600px) {
+    .img-box img {
+      max-width: 120px;
+    }
+    .binatang-grid {
+      gap: 15px;
+    }
+  }
+</style>
+
+<script>
+  function playAudio(id) {
+    const audio = document.getElementById(id);
+    if (audio) {
+      audio.currentTime = 0;
+      audio.play().catch(err => console.log("Audio tidak dapat dimainkan:", err));
+    }
+  }
+</script>
+  </div>
+</div>
+
+<script>
+  // Flipbook setup
+  $('#flipbook').turn({
+    width: window.innerWidth, height: window.innerHeight,
+    display: 'single', autoCenter: true,
+    duration: 1200, gradients: true, acceleration: true
+  });
+
+  window.addEventListener('resize', ()=>$('#flipbook').turn('size',window.innerWidth,window.innerHeight));
+
+  const flipSound = new Audio('audio/flip.mp3');
+  $('#flipbook').bind('turning', function(e,page){
+    const current=$(this).find('.page').eq(page-1);
+    current.addClass('turning');
+    flipSound.currentTime=0; flipSound.play().catch(()=>{});
+    setTimeout(()=>current.removeClass('turning'),500);
+  });
+
+  const swipeHandler = new Hammer(document.getElementById('flipbook'));
+  swipeHandler.on('swipeleft',()=>$('#flipbook').turn('next'));
+  swipeHandler.on('swiperight',()=>$('#flipbook').turn('previous'));
+
+
+function animHuruf(containerId) {
+  const container = document.getElementById(containerId);
+  const hurufs = container.querySelectorAll('span');
+
+  // Reset huruf
+  hurufs.forEach(h => {
+    h.style.opacity = 0;
+    h.style.transform = 'translateY(-20px)';
+  });
+
+  // Animasi satu-satu huruf
+  hurufs.forEach((h, i) => {
+    setTimeout(() => {
+      h.style.transition = 'all 0.4s ease';
+      h.style.opacity = 1;
+      h.style.transform = 'translateY(0)';
+    }, i * 200); // delay setiap huruf
+  });
+}
+
+// Fungsi untuk aktifkan interaksi bila Page 7 wujud
+function initPage7() {
+  const page7 = document.querySelector("#page7");
+  if (!page7) return; // kalau page belum load
+
+  const wrongSound = page7.querySelector("#wrongSound");
+  const correctSound = page7.querySelector("#correctSound");
+
+  page7.querySelectorAll(".choice").forEach(choice => {
+    choice.addEventListener("click", () => {
+      // Reset semua pilihan
+      page7.querySelectorAll(".choice").forEach(c => {
+        c.classList.remove("correct", "wrong");
+      });
+
+      if (choice.dataset.correct === "true") {
+        choice.classList.add("correct");
+        correctSound.currentTime = 0;
+        correctSound.play().catch(() => {});
+      } else {
+        choice.classList.add("wrong");
+        wrongSound.currentTime = 0;
+        wrongSound.play().catch(() => {});
+
+        setTimeout(() => {
+          choice.classList.remove("wrong");
+        }, 500);
+      }
+    });
+  });
+}
+
+// Bila flipbook siap load, attach ke page 7
+$(document).ready(function() {
+  $("#flipbook").on("turned", function(event, page) {
+    if (page === 7) {  // bila user buka Page 7
+      initPage7();
+    }
+  });
+});  
+
+// --- Fungsi Play Button Umum ---
+function setupPlayButton(buttonId, audioId, playText="▶ DENGAR", pauseText="⏸ HENTI") {
+  const btn = document.getElementById(buttonId);
+  const audio = document.getElementById(audioId);
+  if (!btn || !audio) return;
+
+  btn.addEventListener("click", () => {
+    if (audio.paused) {
+      audio.currentTime = 0;
+      audio.play().catch(err => console.error("Audio error:", err));
+      btn.textContent = pauseText;
+    } else {
+      audio.pause();
+      btn.textContent = playText;
+    }
+  });
+
+  audio.addEventListener("ended", () => {
+    btn.textContent = playText;
+  });
+}
+
+// Fungsi automatik - cari semua button play bila page dibuka
+$("#flipbook").on("turned", function(event, page) {
+  // Senarai semua pasangan butang dan audio
+  const pairs = [
+    {btn: "playHijaiyah", audio: "hijaiyahAudio", play: "▶ DENGAR HURUF", pause: "⏸ Henti"},
+    {btn: "playFathah", audio: "fathahAudio", play: "▶ DENGAR SEMUA", pause: "⏸ Henti"},
+    {btn: "playKasrah", audio: "kasrahAudio", play: "▶ DENGAR SEMUA", pause: "⏸ Henti"},
+    {btn: "playDhammah", audio: "dhammahAudio", play: "▶ DENGAR SEMUA", pause: "⏸ Henti"}
+  ];
+
+  pairs.forEach(({btn, audio, play, pause}) => {
+    const button = document.getElementById(btn);
+    const audioEl = document.getElementById(audio);
+    if (!button || !audioEl) return;
+
+    // Reset listener lama
+    const newBtn = button.cloneNode(true);
+    button.parentNode.replaceChild(newBtn, button);
+
+    newBtn.addEventListener("click", () => {
+      if (audioEl.paused) {
+        audioEl.currentTime = 0;
+        audioEl.play().catch(err => console.error("Audio error:", err));
+        newBtn.textContent = pause;
+      } else {
+        audioEl.pause();
+        newBtn.textContent = play;
+      }
+    });
+
+    audioEl.addEventListener("ended", () => {
+      newBtn.textContent = play;
+    });
+  });
+});
+
+// Untuk mainkan audio Surah Al-Fatihah (kekal walau page flip)
+document.addEventListener("click", (e) => {
+  const target = e.target.closest(".ayat-fatihah");
+  if (!target) return;
+
+  const id = target.getAttribute("data-audio");
+  const audio = document.getElementById(id);
+
+  // Stop semua audio lain KECUALI yang dipilih
+document.querySelectorAll("audio").forEach(a => {
+  if (a.id !== id) {
+    a.pause();
+    a.currentTime = 0;
+  }
+});
+
+  if (audio) {
+    audio.currentTime = 0;
+    audio.play().catch(err => console.log("Tak boleh main audio:", err));
+  } else {
+    console.log("Audio tak jumpa:", id);
+  }
+});
+
+// Senarai password sah (boleh tambah untuk setiap pelanggan)
+  const validPasswords = ["PLG-1234", "PLG-5678", "PLG-9012"];
+
+  function checkPassword() {
+    const input = document.getElementById("password").value.trim();
+    const error = document.getElementById("error");
+
+    if (validPasswords.includes(input)) {
+      // Tunjuk e-book, sembunyi login
+      document.getElementById("loginBox").style.display = "none";
+      document.getElementById("ebook-content").style.display = "block";
+    } else {
+      error.textContent = "Password salah!";
+    }
+  }
+</script>
+</body>
+</html>

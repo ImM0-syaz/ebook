@@ -1,0 +1,36 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 20px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.huruf {
+  font-size: 40px;
+  cursor: default;
+}
+
+/* Gaya Butang Audio */
+.audio-btn {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.audio-btn button {
+  background: linear-gradient(45deg, #ff9ff3, #feca57, #48dbfb);
+  color: #fff;
+  padding: 15px 30px;
+  font-size: 20px;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+.audio-btn button:hover {
+  transform: scale(1.1);
+  background: linear-gradient(45deg, #ff6b81, #ffb142, #1dd1a1);
+}
